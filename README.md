@@ -1,4 +1,5 @@
-## Projects
+## Projects Recommendation ML: Personalization Algorithms 
+user와 item based  등 추천 알고리즘을 구현하고 머신러닝 파이프라인을 직접 구현한 프로젝트입니다. 타켓팅을 위한 유저 분류, 클릭 데이터(Implicit Feedback) 기반의 랭킹 최적화, 그리고 차원 축소 기법을 통한 추천 모델의 성능 향상에 초점을 맞추었습니다. 
 
 ### 1. Spark K-Means Diameter Analysis
 
