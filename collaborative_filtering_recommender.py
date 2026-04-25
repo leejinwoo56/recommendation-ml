@@ -1,5 +1,4 @@
 import sys
-
 # Take average of top-k similar user's ratings
 topk_users_to_average = 10
 # Take average of top-k similar items ratings
