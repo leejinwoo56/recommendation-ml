@@ -7,13 +7,7 @@ import numpy as np
 
 
 def load_implicit_ratings(path):
-    """
-    ratings.txt 占쎌굨占쎈뻼: user_id,movie_id,rating,timestamp
 
-    BPR占쎈퓠占쎄퐣占쎈뮉 explicit rating 揶쏅�わ옙占� 占쎄쾿野껓옙 餓λ쵐�뒄占쎈릭筌욑옙 占쎈륫��⑨옙,
-    '�걡�끇�뼄 / 占쎈툧 �걡�끇�뼄' (implicit)筌랃옙 占쎈쾺沃섓옙嚥∽옙
-    user -> set(items) �뤃�듼�쒙쭕占� 筌띾슢諭븝옙�뼄.
-    """
     user_pos_items = defaultdict(set)
     all_items = set()
 
@@ -41,14 +35,7 @@ def train_bpr_mf(
     reg=0.01,
     seed=42
 ):
-    """
-    BPR-MF:
-      score(u, i) = b_i + p_u^T q_i
 
-    占쎈린占쎈뮸占쏙옙占� (u, i, j) 占쎄땔餓λ쵐�솂占쎌뱽 占쎄묘占쎈탣筌띻낱鍮먲옙苑�
-      log 占쏙옙( score(u,i) - score(u,j) ) - 占쎌젟域뱀뮉�넅
-    �몴占� 筌ㅼ뮆占쏙옙占쎌넅占쎈릭占쎈뮉 SGD嚥∽옙 筌욊쑵六�.  (Rendle, 2012) :contentReference[oaicite:2]{index=2}
-    """
     random.seed(seed)
     np.random.seed(seed)
 
@@ -68,12 +55,7 @@ def train_bpr_mf(
         b_i[i] = 0.0
 
     def sample_triplet():
-        """
-        (u, i, j) 占쎄묘占쎈탣:
-          u: 占쎈릭占쎄돌占쎌벥 user
-          i: u揶쏉옙 占쎈뼄占쎌젫嚥∽옙 癰귨옙(positive) 占쎌겫占쎌넅
-          j: u揶쏉옙 占쎈툧 癰귨옙(negative) 占쎌겫占쎌넅
-        """
+
         while True:
             u = random.choice(users)
             pos_items = user_pos_items[u]
@@ -102,7 +84,7 @@ def train_bpr_mf(
             x_uj = b_i[j] + np.dot(p_u, q_j)
             x_uij = x_ui - x_uj
 
-            # log-sigmoid �겫占썽겫袁⑹벥 gradient: d/dx log 占쏙옙(x) = 1 - 占쏙옙(x)
+            # log-sigmoid
             sigmoid = 1.0 / (1.0 + math.exp(-x_uij))
             grad = 1.0 - sigmoid  # ascent 獄쎻뫚堉�
 
@@ -121,7 +103,7 @@ def train_bpr_mf(
             Q[j] += lr * (-grad * p_old - reg * q_j_old)
             b_i[j] += lr * (-grad - reg * b_i[j])
 
-            # 筌뤴뫀�빍占쎄숲筌띻낯�뒠 pseudo-loss (占쎌젟占쎌넇占쎈립 BPR-Opt占쎈뮉 占쎈툡占쎈빍筌욑옙筌랃옙 占쏙옙占쏙옙�셽)
+            
             loss += -math.log(sigmoid + 1e-10) + reg * (
                 np.dot(p_old, p_old)
                 + np.dot(q_i_old, q_i_old)
@@ -140,14 +122,7 @@ def train_bpr_mf(
 
 
 def predict_score_bpr(u, i, P, Q, b_i, pop_fallback=None):
-    """
-    BPR 疫꿸퀡而� score:
-      score(u, i) = b_i + p_u^T q_i
 
-    - 筌띾슣鍮� u 占쎌굢占쎈뮉 i揶쏉옙 占쎈린占쎈뮸占쎈퓠 占쎈씨占쎌몵筌롳옙:
-      * pop_fallback占쎌뵠 占쎌뿳占쎌몵筌롳옙 域밸㈇援� 占쎄텢占쎌뒠 (占쎌뵥疫뀐옙 占쎌젎占쎈땾)
-      * 占쎈씨占쎌몵筌롳옙 0.0占쎌몵嚥∽옙 獄쏆꼹�넎
-    """
     if (u in P) and (i in Q):
         return b_i.get(i, 0.0) + float(np.dot(P[u], Q[i]))
     else:
@@ -157,11 +132,7 @@ def predict_score_bpr(u, i, P, Q, b_i, pop_fallback=None):
 
 
 def compute_popularity_scores(user_pos_items):
-    """
-    揶쏄쑬�뼊 popularity:
-      count_i = 占쎈퉸占쎈뼣 占쎌겫占쎌넅�몴占� 癰귨옙 占쎌��占쏙옙占� 占쎈땾
-      pop_i = log(1 + count_i)�몴占� [0,1]嚥∽옙 占쎌젟域뱀뮉�넅
-    """
+
     item_counts = defaultdict(int)
     for u, items in user_pos_items.items():
         for i in items:
@@ -197,22 +168,22 @@ if __name__ == "__main__":
     train_data = sys.argv[1]  
     test_data = sys.argv[2]   
 
-    # 1) implicit 占쎈린占쎈뮸 占쎈쑓占쎌뵠占쎄숲 嚥≪뮆逾�
+    # 1) implicit 
     print(f"[hw2_3c BPR] Loading training data from {train_data} ...", file=sys.stderr)
     user_pos_items, all_items = load_implicit_ratings(train_data)
     print(f"[hw2_3c BPR] #users={len(user_pos_items)}, #items={len(all_items)}", file=sys.stderr)
 
-    # 2) popularity fallback ��④쑴沅�
+    # 2) popularity fallback
     print("[hw2_3c BPR] Computing popularity fallback scores ...", file=sys.stderr)
     pop_scores = compute_popularity_scores(user_pos_items)
 
-    # 3) BPR-MF 占쎈린占쎈뮸
+    # 3) BPR-MF 
     print("[hw2_3c BPR] Training BPR-MF model ...", file=sys.stderr)
     P, Q, b_i = train_bpr_mf(
         user_pos_items,
         all_items,
         n_factors=80,          # latent dimension 
-        n_epochs=400,           # epoch 占쎈땾
+        n_epochs=400,           # epoch
         n_samples_per_epoch=90000,  
         lr=0.01,
         reg=0.02,
